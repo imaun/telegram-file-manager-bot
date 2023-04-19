@@ -33,5 +33,9 @@ class Database:
         self.cursor.execute(sql, params)
         return self.cursor.fetchall()
 
+    def query_single(self, sql, params):
+        self.cursor.execute(sql, params)
+        return self.cursor.fetchall()[0]
+
     def exec(self, command, params):
         self.cursor.execute(command, params)
