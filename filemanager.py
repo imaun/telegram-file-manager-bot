@@ -22,3 +22,14 @@ def is_directory_exists(dir_name: str, parent_id: int or None):
     with Database() as db:
         result = db.query_single(sql, [dir_name, parent_id])
         return int(result[0]) > 0
+
+
+def new_file(filename: str, file_id: str, dir_id: int or None):
+    sql = """
+        INSERT INTO [Entry]
+            ([Name], [EntryType], [FileId], [ParentId], [Desc])
+        VALUES
+            (?, ?, ?, ?, ?)
+    """
+    with Database() as db:
+        db.exec(sql, [filename, 'file', file_id, dir_id, None])
