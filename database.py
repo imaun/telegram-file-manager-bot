@@ -11,8 +11,8 @@ class Database:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        self.connection.commit()
         self.connection.close()
-
 
     def migrate(self):
         table_entry = """
@@ -28,3 +28,10 @@ class Database:
             )
         """
         self.connection.execute(table_entry)
+
+    def query(self, sql, params):
+        self.cursor.execute(sql, params)
+        return self.cursor.fetchall()
+
+    def exec(self, command, params):
+        self.cursor.execute(command, params)

@@ -4,6 +4,7 @@ import telegram
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext, CallbackQueryHandler
 import sqlite3
 import re
+from database import Database
 
 
 # Initialize root directory
@@ -15,6 +16,10 @@ data[current_dir] = []
 board_id = -1  # Initialized By sending the /start command
 CHANNEL_ID = -1001956472644  # Shows the channel ID (https://bit.ly/2NbJAHD)
 sent_messages_id = []  # Holds the ID of the messages sent by the bot
+
+with Database() as db:
+    db.migrate()
+
 
 def create_board():
     """ Generate main page to display files and directories)"""
