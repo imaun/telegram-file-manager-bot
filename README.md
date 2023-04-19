@@ -11,21 +11,23 @@ To get started, you'll need a Telegram API Access Token, and you can get it here
   # Create the Updater and pass it your bot's token.
     updater = Updater("TOKEN")
 ```
-In order to save and retrieve files in a channel, first create a (private) channel in Telegram and then make the bot the channel admin. Then follow [this instruction](https://gist.github.com/mraaroncruz/e76d19f7d61d59419002db54030ebe35) to find the channel ID and paste it into CHANNEL_ID :
+In order to save and retrieve files in a channel, first create a (private) channel in Telegram and then make the bot the channel admin. 
+Then follow [this instruction](https://gist.github.com/mraaroncruz/e76d19f7d61d59419002db54030ebe35) or an easier way is 
+forwarding a message from your private channel to [@JsonDumpBot](https://t.me/@JsonDumpBot) to find the channel ID and paste it into `CHANNEL_ID` :
 ```
 CHANNEL_ID = -100 # Shows the channel ID
 ```
 
-| Command                            | Description |
-|:---------------------------------- |:-------------|
-| /start                             | Starts the bot |
-| /mkdir `directory_name`            | Creates directory "directory_name" in the current directory|
-| /cd `directory_name`               | Changes directory to "directory_name"|
-| /rm [-r] `file_name` or `file_id`  | Removes specified file "file_name" of "file_id" from the current directory. The -r option allows you to use regular expressions
-| /rmdir [-r] `directory_name`       | Removes specified directory "directory_name" from the current directory. The -r option allows you to use regular expressions|
-| /get [-r] `file_name` or `file_id` | Gets a specific file by "file_name" or "file_id" from the current directory. The -r option allows you to use regular expressions|
-| /rnf `old`,`new`                   | Renames a specifed file "old" to "new". Also, "old" can be "file_id"|
-| /rnd `old`,`new`                   | Renames a specifed directory "old" to "new". Also, "old" can be "file_id"|
+| Command                            | Description                                                                                                                      |
+|:-----------------------------------|:---------------------------------------------------------------------------------------------------------------------------------|
+| /start                             | Starts the bot                                                                                                                   |
+| /mkdir `directory_name`            | Creates directory "directory_name" in the current directory                                                                      |
+| /cd `directory_name`               | Changes directory to "directory_name"                                                                                            |
+| /rm [-r] `file_name` or `file_id`  | Removes specified file "file_name" of "file_id" from the current directory. The -r option allows you to use regular expressions  |
+| /rmdir [-r] `directory_name`       | Removes specified directory "directory_name" from the current directory. The -r option allows you to use regular expressions     |
+| /get [-r] `file_name` or `file_id` | Gets a specific file by "file_name" or "file_id" from the current directory. The -r option allows you to use regular expressions |
+| /rnf `old`,`new`                   | Renames a specifed file "old" to "new". Also, "old" can be "file_id"                                                             |
+| /rnd `old`,`new`                   | Renames a specifed directory "old" to "new". Also, "old" can be "file_id"                                                        |
 
 
 
