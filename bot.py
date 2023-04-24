@@ -1,4 +1,4 @@
-import json
+import os
 from telegram import Update, ParseMode, InlineKeyboardMarkup, InlineKeyboardButton, Bot
 import telegram
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext, CallbackQueryHandler
@@ -6,15 +6,18 @@ import sqlite3
 import re
 from database import Database
 import filemanager
+from dotenv import load_dotenv
 
 # Initialize root directory
+load_dotenv()
 data = {}
 MAIN_DIR_NAME = 'root' # 
 current_dir = MAIN_DIR_NAME
 data[current_dir] = []
 
 board_id = -1  # Initialized By sending the /start command
-CHANNEL_ID = -1001956472644  # Shows the channel ID (https://bit.ly/2NbJAHD)
+CHANNEL_ID = os.getenv('FILE_MANAGER_BOT_CHANNEL_ID')  # read from .env file or Environment variable
+BOT_TOKEN = os.getenv('FILE_MANAGER_BOT_TOKEN')        # read from .env file or Environment variable
 sent_messages_id = []  # Holds the ID of the messages sent by the bot
 
 with Database() as db:
@@ -376,7 +379,7 @@ def Inline_buttons(update: Update, context: CallbackContext) -> None:
 def main():
     """Starts the bot"""
     # Create the Updater and pass it your bot's token.
-    updater = Updater("1627247265:AAG5Ju_OOPyH91M2QbVlfsSfIPwgwP4RMgs")
+    updater = Updater(BOT_TOKEN)
 
     # Get the dispatcher to register handlers
     dispatcher = updater.dispatcher
