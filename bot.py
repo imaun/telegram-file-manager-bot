@@ -13,6 +13,7 @@ load_dotenv()
 data = {}
 MAIN_DIR_NAME = 'root' # 
 current_dir = MAIN_DIR_NAME
+parent_id: int or None = None
 data[current_dir] = []
 
 board_id = -1  # Initialized By sending the /start command
@@ -27,6 +28,7 @@ with Database() as db:
 def create_board():
     """ Generate main page to display files and directories)"""
     global current_dir
+    global parent_id
 
     sql = "SELECT name, type, id FROM info WHERE parent = ?"
     rows = do_sql_query(sql,[current_dir],is_select_query=True)

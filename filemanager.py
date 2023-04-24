@@ -1,6 +1,14 @@
 from database import Database
 
 
+def list(parent_id: int or None):
+    sql = """
+        SELECT * FROM [Entry] WHERE [ParentId] = ?
+    """
+    with Database() as db:
+        return db.query(sql, parent_id)
+
+
 def create_directory(message: str, parent_id: int or None):
     dir_name = ' '.join(message.split(' ')[1:])
     if is_directory_exists(dir_name, parent_id):
