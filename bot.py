@@ -1,6 +1,5 @@
-import os
+import os, logging
 from telegram import Update, ParseMode, InlineKeyboardMarkup, InlineKeyboardButton, Bot
-import telegram
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext, CallbackQueryHandler
 import sqlite3
 import re
@@ -8,8 +7,23 @@ from database import Database
 import filemanager
 from dotenv import load_dotenv
 
-# Initialize root directory
+
 load_dotenv()
+
+# Setup logging
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO
+)
+
+required_configs = ['FILE_MANAGER_BOT_TOKEN', 'FILE_MANAGER_BOT_CHANNEL_ID']
+missing_configs = [value for value in required_configs if os.environ.get(value) is None]
+if len(missing_configs) > 0:
+    logging.error(f'Error: missing config values. {",".join(missing_configs)}')
+    exit(1)
+
+
+# Initialize root directory
 data = {}
 MAIN_DIR_NAME = 'root' # 
 current_dir = MAIN_DIR_NAME
