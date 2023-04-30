@@ -25,7 +25,7 @@ if len(missing_configs) > 0:
 
 # Initialize root directory
 data = {}
-MAIN_DIR_NAME = 'root' # 
+MAIN_DIR_NAME = os.getenv('ROOT_DIR') or 'root'
 current_dir = MAIN_DIR_NAME
 parent_id: int or None = None
 data[current_dir] = []
@@ -35,29 +35,29 @@ CHANNEL_ID = os.getenv('FILE_MANAGER_BOT_CHANNEL_ID')  # read from .env file or 
 BOT_TOKEN = os.getenv('FILE_MANAGER_BOT_TOKEN')        # read from .env file or Environment variable
 sent_messages_id = []  # Holds the ID of the messages sent by the bot
 
+# Creates or Migrates the SQLite Database
 with Database() as db:
     db.migrate()
 
 
 def create_board():
-    """ Generate main page to display files and directories)"""
+    """ Generate main page to display files and directories """
     global current_dir
     global parent_id
 
-    sql = "SELECT name, type, id FROM info WHERE parent = ?"
-    rows = do_sql_query(sql,[current_dir],is_select_query=True)
-    borad_text = "💠 {0} \n\n".format(current_dir)
+    entries = filemanager.list(parent_id)
+    board_text = "💠 {0} \n\n".format(current_dir)
     num_files = 0
     num_dirs = 0
-    for row in rows:
-        if row[1] == 'dir':
-            borad_text += "📂 {0} \n".format(row[0])
-            num_dirs+=1
+    for row in entries:
+        if row['EntryType'] == 'dir':
+            board_text += "📂 {0} \n".format(row[0])
+            num_dirs += 1
         else:
-            borad_text += "🗄 {0}-{1}\n".format(row[2], row[0])
-            num_files+=1
+            board_text += "🗄 {0}-{1}\n".format(row[2], row[0])
+            num_files += 1
 
-    return borad_text+"\n\n💢 {0} Files , {1} Dirs".format(num_files,num_dirs)
+    return board_text+"\n\n💢 {0} Files , {1} Dirs".format(num_files,num_dirs)
 
 
 def get_inline_keyboard():
