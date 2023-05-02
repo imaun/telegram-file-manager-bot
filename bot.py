@@ -7,7 +7,6 @@ from database import Database
 import filemanager
 from dotenv import load_dotenv
 
-
 load_dotenv()
 
 # Setup logging
@@ -22,7 +21,6 @@ if len(missing_configs) > 0:
     logging.error(f'Error: missing config values. {",".join(missing_configs)}')
     exit(1)
 
-
 # Initialize root directory
 data = {}
 MAIN_DIR_NAME = os.getenv('ROOT_DIR') or 'root'
@@ -32,7 +30,7 @@ data[current_dir] = []
 
 board_id = -1  # Initialized By sending the /start command
 CHANNEL_ID = os.getenv('FILE_MANAGER_BOT_CHANNEL_ID')  # read from .env file or Environment variable
-BOT_TOKEN = os.getenv('FILE_MANAGER_BOT_TOKEN')        # read from .env file or Environment variable
+BOT_TOKEN = os.getenv('FILE_MANAGER_BOT_TOKEN')  # read from .env file or Environment variable
 sent_messages_id = []  # Holds the ID of the messages sent by the bot
 
 # Creates or Migrates the SQLite Database
@@ -57,23 +55,23 @@ def create_board():
             board_text += "🗄 {0}-{1}\n".format(row[2], row[0])
             num_files += 1
 
-    return board_text+"\n\n💢 {0} Files , {1} Dirs".format(num_files,num_dirs)
+    return board_text + "\n\n💢 {0} Files , {1} Dirs".format(num_files, num_dirs)
 
 
 def get_inline_keyboard():
     """Return Inline Keyboard"""
     keyboard = [
-    [
-        InlineKeyboardButton("❇️ Home", callback_data='home_button'),
-        InlineKeyboardButton("🔙 Back", callback_data='back_button'),
-    ],
-    [InlineKeyboardButton("🗑 Clear History", callback_data='clear_history')],
+        [
+            InlineKeyboardButton("❇️ Home", callback_data='home_button'),
+            InlineKeyboardButton("🔙 Back", callback_data='back_button'),
+        ],
+        [InlineKeyboardButton("🗑 Clear History", callback_data='clear_history')],
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     return reply_markup
 
 
-def do_sql_query(query, values, is_select_query = False, has_regex = False):
+def do_sql_query(query, values, is_select_query=False, has_regex=False):
     """ Connects to the database, executes the query, and returns results, if any.s
     Args:
         query(str): query to execute
@@ -86,14 +84,13 @@ def do_sql_query(query, values, is_select_query = False, has_regex = False):
         if has_regex:
             conn.create_function("REGEXP", 2, regexp)
         cursor = conn.cursor()
-        cursor.execute(query,values)
+        cursor.execute(query, values)
         if is_select_query:
             rows = cursor.fetchall()
             return rows
     finally:
         conn.commit()
         cursor.close()
-    
 
 
 def start(update: Update, context: CallbackContext) -> None:
@@ -101,7 +98,8 @@ def start(update: Update, context: CallbackContext) -> None:
     global board_id
     chat_id = update.message.chat_id
     clear_history(update, update.message.chat_id, update.message.message_id)
-    board_id = update.message.bot.send_message(chat_id=chat_id, text=create_board(), parse_mode=ParseMode.HTML, reply_markup=get_inline_keyboard()).message_id
+    board_id = update.message.bot.send_message(
+        chat_id=chat_id, text=create_board(), parse_mode=ParseMode.HTML, reply_markup=get_inline_keyboard()).message_id
 
 
 def list_items(update: Update, context: CallbackContext) -> None:
@@ -120,19 +118,21 @@ def remove_file(update: Update, context: CallbackContext) -> None:
     global current_dir
     chat_id = update.message.chat_id
     message_text = update.message.text
-    dir_name = message_text.split("-r")[1].strip() if len(message_text.split("-r"))>=2 else ' '.join(message_text.split(" ")[1:]).strip()
+    dir_name = message_text.split("-r")[1].strip() if len(message_text.split("-r")) >= 2 else ' '.join(
+        message_text.split(" ")[1:]).strip()
     clear_history(update, update.message.chat_id, update.message.message_id)
-    
-    if len(message_text.split("-r"))>=2:
+
+    if len(message_text.split("-r")) >= 2:
         sql = "DELETE FROM info WHERE parent = ? AND type = 'file' AND ( name REGEXP ? OR id REGEXP ?)"
-        values = [current_dir,dir_name,dir_name]
+        values = [current_dir, dir_name, dir_name]
     else:
         sql = "DELETE FROM info WHERE parent = ? AND type = 'file' AND ( name = ? OR id = ?)"
-        values = [current_dir,dir_name,dir_name]
-    do_sql_query(sql,values,has_regex=True)
+        values = [current_dir, dir_name, dir_name]
+    do_sql_query(sql, values, has_regex=True)
 
-    update.message.bot.edit_message_text(chat_id=chat_id, message_id=board_id, text=create_board(), parse_mode=ParseMode.HTML, reply_markup=get_inline_keyboard())
-        
+    update.message.bot.edit_message_text(chat_id=chat_id, message_id=board_id, text=create_board(),
+                                         parse_mode=ParseMode.HTML, reply_markup=get_inline_keyboard())
+
 
 def regexp(regex, expression):
     """ Receives an expression and specifies if it matches the received regex or not
@@ -141,7 +141,7 @@ def regexp(regex, expression):
         expression(str): The expression sent to check if it matches the regex
     """
     try:
-        return True if re.match(regex,expression) else False
+        return True if re.match(regex, expression) else False
     except Exception as e:
         return False
 
@@ -152,18 +152,18 @@ def remove_dir(update: Update, context: CallbackContext) -> None:
     global current_dir
     chat_id = update.message.chat_id
     message_text = update.message.text
-    dir_name = message_text.split("-r")[1].strip() if len(message_text.split("-r"))>=2 else ' '.join(message_text.split(" ")[1:]).strip()
+    dir_name = message_text.split("-r")[1].strip() if len(message_text.split("-r")) >= 2 else ' '.join(
+        message_text.split(" ")[1:]).strip()
 
     clear_history(update, update.message.chat_id, update.message.message_id)
 
-    
-    if len(message_text.split("-r"))>=2:
+    if len(message_text.split("-r")) >= 2:
         sql = "DELETE FROM info WHERE name REGEXP ? AND parent = ? AND type = 'dir'"
-        values = [dir_name,current_dir]
+        values = [dir_name, current_dir]
     else:
         sql = "DELETE FROM info WHERE name = ? AND parent = ? AND type = 'dir'"
-        values = [dir_name,current_dir]
-    do_sql_query(sql,values,has_regex=True)
+        values = [dir_name, current_dir]
+    do_sql_query(sql, values, has_regex=True)
 
     update.message.bot.edit_message_text(chat_id=chat_id, message_id=board_id, text=create_board(
     ), parse_mode=ParseMode.HTML, reply_markup=get_inline_keyboard())
@@ -175,11 +175,11 @@ def is_directory_exists(dir_name):
         dir_name(str): directory name
     """
     global current_dir
-    
+
     sql = "SELECT COUNT(*) FROM info WHERE name = ? AND parent = ?"
-    values = [dir_name,current_dir]
-    count = do_sql_query(sql,values,is_select_query=True)[0]
-    return True if int(count[0])>0 else False
+    values = [dir_name, current_dir]
+    count = do_sql_query(sql, values, is_select_query=True)[0]
+    return True if int(count[0]) > 0 else False
 
 
 def create_directory(update: Update, context: CallbackContext) -> None:
@@ -191,12 +191,14 @@ def create_directory(update: Update, context: CallbackContext) -> None:
 
     clear_history(update, update.message.chat_id, update.message.message_id)
     if is_directory_exists(new_dir_name):
-        update.message.bot.edit_message_text(chat_id=chat_id, message_id=board_id, text=create_board(), parse_mode=ParseMode.HTML, reply_markup=get_inline_keyboard())
+        update.message.bot.edit_message_text(chat_id=chat_id, message_id=board_id, text=create_board(),
+                                             parse_mode=ParseMode.HTML, reply_markup=get_inline_keyboard())
     else:
         sql = "INSERT INTO info (parent, name, type, id) VALUES (?,?,?,?)"
-        values = [current_dir,new_dir_name,"dir","null"]
-        do_sql_query(sql,values)
-        update.message.bot.edit_message_text(chat_id=chat_id, message_id=board_id, text=create_board(), parse_mode=ParseMode.HTML, reply_markup=get_inline_keyboard())
+        values = [current_dir, new_dir_name, "dir", "null"]
+        do_sql_query(sql, values)
+        update.message.bot.edit_message_text(chat_id=chat_id, message_id=board_id, text=create_board(),
+                                             parse_mode=ParseMode.HTML, reply_markup=get_inline_keyboard())
 
 
 def change_directory(update: Update, context: CallbackContext) -> None:
@@ -214,31 +216,32 @@ def change_directory(update: Update, context: CallbackContext) -> None:
         ), parse_mode=ParseMode.HTML, reply_markup=get_inline_keyboard())
 
     elif is_directory_exists(destination_dir):
-        current_dir = current_dir+'/'+destination_dir
+        current_dir = current_dir + '/' + destination_dir
         update.message.bot.edit_message_text(chat_id=chat_id, message_id=board_id, text=create_board(
         ), parse_mode=ParseMode.HTML, reply_markup=get_inline_keyboard())
     else:
         update.message.bot.edit_message_text(chat_id=chat_id, message_id=board_id, text=create_board(
         ), parse_mode=ParseMode.HTML, reply_markup=get_inline_keyboard())
 
+
 def get_file_name(update):
     if update.message.text:
-            year = str(update.message.date.year)
-            month = str(update.message.date.month)
-            day = str(update.message.date.day)
-            return  "(Text Message)-"+year+"/"+month+"/"+day
+        year = str(update.message.date.year)
+        month = str(update.message.date.month)
+        day = str(update.message.date.day)
+        return "(Text Message)-" + year + "/" + month + "/" + day
     elif update.message.audio:
-        return  update.message.audio.file_name
+        return update.message.audio.file_name
     elif update.message.document:
-        return  update.message.document.file_name
+        return update.message.document.file_name
     elif update.message.video:
-        return  update.message.video.file_name
+        return update.message.video.file_name
     elif update.message.voice:
-        return  update.message.voice.file_unique_id
+        return update.message.voice.file_unique_id
     elif update.message.photo:
         # The best quality of an image is selected when several different qualities are available
-        return  update.message.photo[len(
-            update.message.photo)-1].file_unique_id
+        return update.message.photo[len(
+            update.message.photo) - 1].file_unique_id
 
 
 def add_file(update: Update, context: CallbackContext) -> None:
@@ -252,30 +255,29 @@ def add_file(update: Update, context: CallbackContext) -> None:
     file_id = update.message.bot.forward_message(CHANNEL_ID, from_chat_id=chat_id, message_id=message_id).message_id
 
     clear_history(update, update.message.chat_id, update.message.message_id)
-    
+
     # For messages forwarded from channels or from anonymous administrators, information about the original sender chat.
     if update.message.forward_from_chat:
         name = update.message.forward_from_chat.username if update.message.forward_from_chat.username else update.message.forward_from_chat.title
-        file_name =  name+"-"+get_file_name(update)
+        file_name = name + "-" + get_file_name(update)
     # For forwarded messages, sender of the original message.
     elif update.message.forward_from:
-        file_name = update.message.forward_from.username +"-"+get_file_name(update)
+        file_name = update.message.forward_from.username + "-" + get_file_name(update)
     # Sender’s name for messages forwarded from users who disallow adding a link to their account in forwarded messages.
     elif update.message.forward_sender_name:
-        file_name = update.message.forward_sender_name +"-"+get_file_name(update)
+        file_name = update.message.forward_sender_name + "-" + get_file_name(update)
     # Sender, empty for messages sent to channels.
     elif update.message.from_user:
-        file_name = update.message.from_user.username +"-"+get_file_name(update)
+        file_name = update.message.from_user.username + "-" + get_file_name(update)
     else:
         file_name = get_file_name(update)
 
-
     sql = "INSERT INTO info (parent, name, type, id) VALUES (?,?,?,?)"
-    values = [current_dir,file_name,"file",str(file_id)]
-    do_sql_query(sql,values)
+    values = [current_dir, file_name, "file", str(file_id)]
+    do_sql_query(sql, values)
 
-    update.message.bot.edit_message_text(chat_id=chat_id, message_id=board_id, text=create_board(), parse_mode=ParseMode.HTML, reply_markup=get_inline_keyboard())
-
+    update.message.bot.edit_message_text(chat_id=chat_id, message_id=board_id, text=create_board(),
+                                         parse_mode=ParseMode.HTML, reply_markup=get_inline_keyboard())
 
 
 def rename_file(update: Update, context: CallbackContext) -> None:
@@ -290,8 +292,8 @@ def rename_file(update: Update, context: CallbackContext) -> None:
     clear_history(update, update.message.chat_id, update.message.message_id)
 
     sql = "UPDATE info SET name = ? WHERE type = 'file' AND  (name = ? OR id = ?)"
-    values = [new_name,old_name,old_name]
-    do_sql_query(sql,values)
+    values = [new_name, old_name, old_name]
+    do_sql_query(sql, values)
 
     update.message.bot.edit_message_text(chat_id=chat_id, message_id=board_id, text=create_board(
     ), parse_mode=ParseMode.HTML, reply_markup=get_inline_keyboard())
@@ -309,10 +311,11 @@ def rename_dir(update: Update, context: CallbackContext) -> None:
     clear_history(update, update.message.chat_id, update.message.message_id)
 
     sql = "UPDATE info SET name = ? WHERE type = 'dir' AND  name = ?"
-    values = [new_name,old_name]
-    do_sql_query(sql,values)
+    values = [new_name, old_name]
+    do_sql_query(sql, values)
 
-    update.message.bot.edit_message_text(chat_id=chat_id, message_id=board_id, text=create_board(), parse_mode=ParseMode.HTML, reply_markup=get_inline_keyboard())
+    update.message.bot.edit_message_text(chat_id=chat_id, message_id=board_id, text=create_board(),
+                                         parse_mode=ParseMode.HTML, reply_markup=get_inline_keyboard())
 
 
 def is_desired_name(query, item_name="", item_id=""):
@@ -325,22 +328,22 @@ def get_files(update: Update, context: CallbackContext) -> None:
     global CHANNEL_ID
     chat_id = update.message.chat_id
     message_text = update.message.text
-    dir_name = message_text.split("-r")[1].strip() if len(message_text.split("-r"))>=2 else ' '.join(message_text.split(" ")[1:]).strip()
-    
+    dir_name = message_text.split("-r")[1].strip() if len(message_text.split("-r")) >= 2 else ' '.join(
+        message_text.split(" ")[1:]).strip()
+
     clear_history(update, update.message.chat_id, update.message.message_id)
 
-
-    if len(message_text.split("-r"))>=2:
+    if len(message_text.split("-r")) >= 2:
         sql = "SELECT id FROM info WHERE parent = ? AND type = 'file' AND ( name REGEXP ? OR id REGEXP ?)"
-        values = [current_dir,dir_name,dir_name]
+        values = [current_dir, dir_name, dir_name]
     else:
-        sql = "SELECT id FROM info WHERE parent = '"+current_dir+"' AND type = 'file' AND ( name = '"+dir_name+"' OR id = '"+dir_name+"')"
-        values = [current_dir,dir_name,dir_name]
-    file_ids = do_sql_query(sql,values,is_select_query=True,has_regex=True)
+        sql = "SELECT id FROM info WHERE parent = '" + current_dir + "' AND type = 'file' AND ( name = '" + dir_name + "' OR id = '" + dir_name + "')"
+        values = [current_dir, dir_name, dir_name]
+    file_ids = do_sql_query(sql, values, is_select_query=True, has_regex=True)
 
     for id in file_ids:
-         message_id = update.message.bot.forward_message(chat_id, from_chat_id=CHANNEL_ID, message_id=id[0]).message_id
-         sent_messages_id.append(message_id)
+        message_id = update.message.bot.forward_message(chat_id, from_chat_id=CHANNEL_ID, message_id=id[0]).message_id
+        sent_messages_id.append(message_id)
 
 
 def clear_history(update, chat_id, message_id):
@@ -380,15 +383,17 @@ def Inline_buttons(update: Update, context: CallbackContext) -> None:
         else:
             query.answer(text='There is no item to remove!')
 
-    elif query.data =='back_button':
+    elif query.data == 'back_button':
         previous_dir = current_dir.rsplit('/', 1)[0]
         current_dir = previous_dir
-        update.callback_query.edit_message_text(text=create_board(), parse_mode=ParseMode.HTML, reply_markup=get_inline_keyboard())
+        update.callback_query.edit_message_text(text=create_board(), parse_mode=ParseMode.HTML,
+                                                reply_markup=get_inline_keyboard())
         query.answer(text=current_dir)
 
     elif query.data == 'home_button':
         current_dir = MAIN_DIR_NAME
-        update.callback_query.edit_message_text(text=create_board(), parse_mode=ParseMode.HTML, reply_markup=get_inline_keyboard())
+        update.callback_query.edit_message_text(text=create_board(), parse_mode=ParseMode.HTML,
+                                                reply_markup=get_inline_keyboard())
         query.answer(text=MAIN_DIR_NAME)
 
 

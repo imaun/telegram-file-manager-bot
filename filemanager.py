@@ -41,3 +41,11 @@ def new_file(filename: str, file_id: str, dir_id: int or None):
     """
     with Database() as db:
         db.exec(sql, [filename, 'file', file_id, dir_id, None])
+
+
+def update_file(file_id: str, desc: str):
+    sql = """
+        UPDATE [Entry] SET [Desc] = ? WHERE [Id] = ?
+    """
+    with Database() as db:
+        db.exec(sql, [desc, file_id])
